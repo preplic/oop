@@ -20,7 +20,7 @@ Spring框架自从发布以来就发展迅速，现在已经是最受欢迎的�
 
 Spring框架包含的功能大约由20个小模块组成。这些模块按组可分为核心容器(Core Container)、数据访问/集成(Data Access/Integration)、Web、面向切面编程(AOP和Aspects)、设备(Instrumentation)、消息(Messaging)和测试(Test)。Spring官方文档中为这些模块画出了形象的示意图：
 
-![1745215-20200715183321528-138974993](.\1745215-20200715183321528-138974993.png)
+![1745215-20200715183321528-138974993](./1745215-20200715183321528-138974993.png)
 
 ### 2.3 Spring 核心技术
 
@@ -95,11 +95,11 @@ public interface BeanFactory {
 
 于是乎我们必须继续向下，顺藤摸瓜，分析一下BeanFactory的子接口和实现类：
 
-![2](.\2.jfif)
+![2](./2.jfif)
 
 可以发现，BeanFactory下子接口的默认实现类是DefaultListableBeanFactory，分析这个实现类，我们可以看到：
 
-![3](.\3.jpg)
+![3](./3.jpg)
 
 它已经实现了Bean的注册例如registerSingleton()方法。如此一来我们已经找到了目标，阅读注释和官方文档，其中的singletonObjects即为存放单例Bean的map，由名称映射到Bean的实例。而其余两级缓存则用于解决循环依赖。同样DefaultSingletonBeanRegistry也提供了registerSingleton()、addSingleton()等一系列提供Bean存取服务的方法。接下来就很简单了，我们只要找到这个实现类和BeanFactory的关系就可以了。 
 
@@ -119,17 +119,17 @@ DefaultSingletonBeanRegistry#getSingleton(String beanName, boolean allowEarlyRef
 ```
 打上断点，然后放开上面的断点，让程序停在getSingleton(...)方法：
 
-![4](.\4.jpg)
+![4](./4.jpg)
 
 得到调用栈如下：
 
-![5](.\5.jpg)
+![5](./5.jpg)
 
 现在再让我们来分析一下这个调用栈，可以大胆猜想，AnnotationConfigApplicationContext通过层层继承，最终继承了DefaultSingletonBeanRegistry，然后getBean()方法在某一处调用了getSingleton()，最终从earlySingletonObjects拿到bean。
 
 但是检查类继承图：
 
-![6](.\6.jpg)
+![6](./6.jpg)
 
 AnnotationConfigApplicationContext和DefaultSingletonBeanRegistry没有任何关系！
 
@@ -152,6 +152,6 @@ public Object getBean(string name) throws BeansException {
 ```
 相当于AbstractApplicationContext直接在内部实现了BeanFactory，就有了getBean()方法。实际上，AnnotationConfigApplicationContext#getBean()整个过程是这样的：
 
-![7](.\7.jpg)
+![7](./7.jpg)
 
 在这里，DefaultListableBeanFactory实际上充当了一个“中介”的作用，之前的疑惑便都可以解答了。
